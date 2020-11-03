@@ -106,7 +106,8 @@ class GetUserDetails(Resource):
                 raise Exception("Unauthorized")
             elif not 'Basic' in token:
                 raise Exception("Unauthorized")
-            token = token.lstrip('Basic ')
+            token = token.lstrip('Basic')
+            token = token.lstrip()
             if not self.is_valid_auth(username, token):
                 raise Exception("Unauthorized")
             query = "SELECT * FROM users WHERE username=%s LIMIT 1"
@@ -156,7 +157,8 @@ class CastVote(Resource):
                 raise Exception("Unauthorized")
             username = request.json['username']
             is_voted = True
-            token = token.lstrip('Basic ')
+            token = token.lstrip('Basic')
+            token = token.lstrip()
             if not self.is_valid_auth(username, token):
                 raise Exception("Unauthorized")
             elif self.has_user_voted(username):
@@ -215,7 +217,8 @@ class Otp(Resource):
                     raise Exception("Unauthorized")
                 username = request.json['username']
                 otp = request.json['otp']
-                token = token.lstrip('Basic ')
+                token = token.lstrip('Basic')
+                token = token.lstrip()
                 if not self.is_valid_auth(username, token):
                     raise Exception("Unauthorized")
 
@@ -255,7 +258,8 @@ class Image(Resource):
                 raise Exception("Unauthorized")
             username = request.json['username']
             image_data = request.json['image_data']
-            token = token.lstrip('Basic ')
+            token = token.lstrip('Basic')
+            token = token.lstrip()
             if not self.is_valid_auth(username, token):
                 raise Exception("Unauthorized")
             query = "UPDATE users SET image_data=%s WHERE username=%s"
@@ -294,7 +298,8 @@ class Leaders(Resource):
                 raise Exception("Unauthorized")
             elif not 'Basic' in token:
                 raise Exception("Unauthorized")
-            token = token.lstrip('Basic ')
+            token = token.lstrip('Basic')
+            token = token.lstrip()
             if not self.is_valid_auth(username, token):
                 raise Exception("Unauthorized")
             query = "SELECT * FROM leaders"
@@ -340,7 +345,8 @@ class LogOut(Resource):
                 raise Exception("Unauthorized")
             elif not 'Basic' in token:
                 raise Exception("Unauthorized")
-            token = token.lstrip('Basic ')
+            token = token.lstrip('Basic')
+            token = token.lstrip()
             username = request.json['username']
             if not self.is_valid_auth(username, token):
                 raise Exception("Unauthorized")
