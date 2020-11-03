@@ -9,6 +9,7 @@ from db_config import mysql
 import json
 import collections
 from flask_api import status
+import uuid
 
 api = Api(app)
 
@@ -28,10 +29,24 @@ class Authenticate(Resource):
                 if rows_count == 0:
                     raise Exception("Invalid User")
 
-                response = {'token': rows[4]}
+                token = str(uuid.uuid4())
+                self.update_token(username, token)
+                response = {'token': token}
                 return response, status.HTTP_200_OK
             else:
                 raise Exception("Invalid Request")
+        except  Exception as e:
+            response = {'message': format(e)}
+            return response, status.HTTP_401_UNAUTHORIZED
+
+    def update_token(self, username, token):
+        try:
+            query = "UPDATE users SET token=%s WHERE username=%s"
+            data = (token, username)
+            conn = mysql.connect()
+            cursor = conn.cursor()
+            cursor.execute(query, data)
+            conn.commit()
         except  Exception as e:
             response = {'message': format(e)}
             return response, status.HTTP_401_UNAUTHORIZED
@@ -107,8 +122,9 @@ class GetUserDetails(Resource):
                 'username': rows[1],
                 'is_voted': rows[3],
                 'email': rows[5],
-                'aadhar_no': rows[5],
-                'phone': rows[7]
+                'aadhar_no': rows[6],
+                'phone': rows[7],
+                'image_data': rows[8]
             }
             return response, status.HTTP_200_OK
         except Exception as e:
@@ -292,10 +308,49 @@ class Leaders(Resource):
             response =[]
             for i in rows:
                 obj = {
-                    'party': i[1],
-                    'leader': i[2]
+                    'label': i[1] + ":" + i[2],
+                    'value': i[1] + ":" + i[2]
                 }
                 response.append(obj)
+            return response, status.HTTP_200_OK
+        except Exception as e:
+            response = {'message': format(e)}
+            if format(e) == 'Unauthorized':
+                return response, status.HTTP_401_UNAUTHORIZED
+            return response, status.HTTP_400_BAD_REQUEST
+
+    def is_valid_auth(self, username, token):
+        query = "SELECT * FROM users WHERE username=%s AND token=%s"
+        data = (username, token)
+        conn = mysql.connect()
+        cursor = conn.cursor()
+        cursor.execute(query, data)
+        rows = cursor.fetchone()
+        rows_count = cursor.rowcount
+        if rows_count == 0:
+            return False
+
+        return True
+
+class LogOut(Resource):
+    def post(self):
+        try:
+            token = request.headers.get('Authorization')
+            if token == None:
+                raise Exception("Unauthorized")
+            elif not 'Basic' in token:
+                raise Exception("Unauthorized")
+            token = token.lstrip('Basic ')
+            username = request.json['username']
+            if not self.is_valid_auth(username, token):
+                raise Exception("Unauthorized")
+            query = "UPDATE users SET token=%s WHERE username=%s"
+            data = ("", username)
+            conn = mysql.connect()
+            cursor = conn.cursor()
+            cursor.execute(query, data)
+            conn.commit()
+            response = {'message': 'Logged Out'}
             return response, status.HTTP_200_OK
         except Exception as e:
             response = {'message': format(e)}
@@ -326,6 +381,7 @@ api.add_resource(CastVote, '/v1/cast-vote')
 api.add_resource(Otp, '/v1/otp')
 api.add_resource(Image, '/v1/image')
 api.add_resource(Leaders, '/v1/leaders/<username>')
+api.add_resource(LogOut, '/v1/logout')
 
 
 if __name__ == '__main__':
