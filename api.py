@@ -121,6 +121,7 @@ class GetUserDetails(Resource):
                 raise Exception("User not found")
             response = {
                 'username': rows[1],
+                'image_verified': 1,
                 'is_voted': rows[3],
                 'email': rows[5],
                 'aadhar_no': rows[6],
