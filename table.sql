@@ -21,3 +21,9 @@ CREATE TABLE `leaders` (
   `leader` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+
+INSERT INTO `leaders` (`id`, `party`, `leader`)
+VALUES
+	(1, 'tmc', 'john doe'),
+	(2, 'bjp', 'erik trevor');
+
